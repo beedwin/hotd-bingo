@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House of the Dragon S3 — Bingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Pirata+One&display=swap" rel="stylesheet">
+<style>
+  /* Transparent page background so this works as an OBS overlay */
+  html, body { margin: 0; background: transparent; }
+  body {
+    -webkit-font-smoothing: antialiased;
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 32px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  * { box-sizing: border-box; }
+
+  .card {
+    width: 100%;
+    max-width: 920px;
+    padding: 34px 34px 28px;
+    border-radius: 3px;
+    border: 1px solid #6e4a26;
+    background:
+      radial-gradient(circle at 18% 12%, rgba(184,148,86,0.12), transparent 42%),
+      radial-gradient(circle at 88% 85%, rgba(120,80,40,0.13), transparent 46%),
+      linear-gradient(160deg, #f2e6c9, #ead9b4);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.55),
+      inset 0 0 0 8px rgba(244,233,205,0.5),
+      inset 0 0 0 9px rgba(110,74,38,0.45);
+  }
+
+  .head { text-align: center; margin-bottom: 18px; }
+  .eyebrow {
+    font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.34em;
+    text-transform: uppercase; color: #8a5a30; margin-bottom: 10px;
+  }
+  .title {
+    font-family: 'Pirata One', serif; font-size: 50px; line-height: 0.95;
+    color: #5a161a; letter-spacing: 0.01em;
+  }
+  .bingo-rule { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 8px; }
+  .bingo-rule .ln { height: 1px; width: 64px; }
+  .bingo-rule .ln.l { background: linear-gradient(90deg, transparent, #b89b5e); }
+  .bingo-rule .ln.r { background: linear-gradient(90deg, #b89b5e, transparent); }
+  .bingo-rule .word {
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: 21px;
+    letter-spacing: 0.4em; color: #a9802f; padding-left: 0.4em;
+  }
+  .subtitle { font-family: 'EB Garamond', serif; font-style: italic; font-size: 15px; color: #6b4a2a; margin-top: 8px; }
+  .seedline { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; color: #9a7434; margin-top: 8px; text-transform: uppercase; }
+
+  .banner { text-align: center; margin-bottom: 14px; min-height: 0; }
+  .banner.hidden { display: none; }
+  .banner span {
+    display: inline-block; font-family: 'Cinzel', serif; font-weight: 700; font-size: 15px;
+    letter-spacing: 0.22em; color: #f1e4c6;
+    background: linear-gradient(160deg, #6a1c20, #4a1115);
+    border: 1px solid #b89b5e; border-radius: 30px; padding: 9px 26px;
+    animation: hotdPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes hotdPulse {
+    0%,100% { box-shadow: 0 0 0 1px #b89b5e, 0 0 14px rgba(184,155,94,0.25); }
+    50% { box-shadow: 0 0 0 1px #b89b5e, 0 0 22px rgba(184,155,94,0.6); }
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
+
+  .cell {
+    position: relative; min-height: 124px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 12px 10px;
+    cursor: pointer; border-radius: 2px; user-select: none; overflow: hidden;
+    transition: background .25s, box-shadow .2s, transform .12s;
+    border: 1px solid rgba(74,42,28,0.32);
+    background: linear-gradient(145deg, #f7eedb, #efe2c4);
+    box-shadow: inset 0 0 0 3px rgba(247,238,219,0.55), inset 0 0 18px rgba(120,80,40,0.07);
+  }
+  .cell:hover { transform: translateY(-2px); box-shadow: 0 7px 16px rgba(60,30,15,0.28); }
+  .cell .txt {
+    font-family: 'EB Garamond', serif; font-weight: 500; font-size: 15px;
+    color: #2a1a12; line-height: 1.18;
+  }
+  .cell.quote .txt { font-style: italic; }
+  .cell.marked { background: linear-gradient(145deg, #efd9c8, #e4c3ad); }
+  .cell.marked .txt { color: #5a2f1e; }
+  .cell.marked .stamp {
+    position: absolute; width: 88px; height: 88px; border-radius: 50%;
+    border: 3px solid rgba(150,22,26,0.7); display: flex; align-items: center; justify-content: center;
+    transform: rotate(-11deg); color: rgba(150,22,26,0.7);
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: 30px;
+    box-shadow: inset 0 0 0 2px rgba(60,20,12,0.08); pointer-events: none;
+  }
+  .cell.free {
+    cursor: default;
+    background: radial-gradient(circle at 50% 35%, #5a161a, #3a0e12);
+    border: 1px solid #b89b5e;
+    box-shadow: inset 0 0 0 3px rgba(184,155,94,0.35), 0 0 14px rgba(0,0,0,0.25);
+  }
+  .cell.free .glyph { font-family: 'Cinzel', serif; font-size: 20px; color: #caa45c; line-height: 1; margin-bottom: 6px; }
+  .cell.free .txt { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.2em; font-size: 16px; color: #e3c179; }
+  .cell.win {
+    border: 1px solid #b89b5e;
+    box-shadow: inset 0 0 0 3px rgba(184,155,94,0.6), 0 0 0 2px #c79a4a, 0 0 16px #c79a4a;
+  }
+
+  .actions { display: flex; gap: 14px; justify-content: center; margin-top: 22px; }
+  button {
+    font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    border-radius: 3px; padding: 11px 24px; cursor: pointer; transition: background .2s;
+  }
+  button.primary {
+    color: #f1e4c6; background: linear-gradient(160deg, #6a1c20, #4a1115);
+    border: 1px solid #b89b5e; box-shadow: 0 3px 10px rgba(0,0,0,0.28);
+  }
+  button.primary:hover { background: linear-gradient(160deg, #7d2227, #5a161a); }
+  button.ghost { color: #5a3a1e; background: transparent; border: 1px solid #9a7434; }
+  button.ghost:hover { background: rgba(154,116,52,0.12); }
+  button.ghost.hidden { display: none; }
+
+  .foot { text-align: center; margin-top: 16px; font-family: 'EB Garamond', serif; font-style: italic; font-size: 12px; color: #9a7a52; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="eyebrow">All must have been a mistake</div>
+      <div class="title">House of the Dragon season 3</div>
+      <div class="bingo-rule">
+        <span class="ln l"></span>
+        <span class="word">BINGO</span>
+        <span class="ln r"></span>
+      </div>
+      <div class="subtitle">Mark each well-worn trope as it graces the realm.</div>
+      <div class="seedline" id="seedline"></div>
+    </div>
+
+    <div class="banner hidden" id="banner"><span>✦ BINGO — THE THRONE IS WON ✦</span></div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="actions">
+      <button class="primary" id="newCard" type="button">New Card</button>
+      <button class="ghost hidden" id="clear" type="button">Clear Marks</button>
+    </div>
+
+    <div class="foot">A fan-made amusement of the Crownlands — tap a tile when the omen appears.</div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- Event database: exactly 31 entries, wording/punctuation preserved ----
+  var EVENTS = [
+    "Dragon screeches at the end of episode",
+    "\"What would you have me do?\"",
+    "\"Brother.\"",
+    "\"Cousin.\"",
+    "\"Sister.\"",
+    "\"Nephew.\"",
+    "Sneaking in behind enemy lines",
+    "Wearing armor at sea",
+    "Teleportation",
+    "Retconing events from previous seasons",
+    "Rhaenyra sighs incredolously",
+    "Laenor returns",
+    "Jaceaerys blue-steels",
+    "Posing with dragon in random location",
+    "Daenerys reference",
+    "Battle aftermath episode opener",
+    "Patriarchy bad",
+    "Inconsequential plot line",
+    "Impossibly correct assumption",
+    "Impossible knowledge",
+    "Pivotal misunderstanding",
+    "Harold returns",
+    "Dragon sneak attack from below",
+    "Cut past important battle",
+    "Traitor-scare turns out to be untrue",
+    "Terrible disguise",
+    "Daemon survives impossible odds",
+    "Aemond furiously kills random innocents",
+    "Menacing step forward",
+    "Rhaealicent",
+    "Dragon swoops in last minute to win battle"
+  ];
+
+  // ---- Seeded PRNG (deterministic): xmur3 hash -> mulberry32 ----
+  function xmur3(str) {
+    var h = 1779033703 ^ str.length;
+    for (var i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      h ^= h >>> 16;
+      return h >>> 0;
+    };
+  }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeRng(seed) {
+    var seedFn = xmur3(String(seed));
+    return mulberry32(seedFn());
+  }
+
+  // ---- Seed plumbing ----
+  function randomSeed() {
+    var chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    var s = "";
+    for (var i = 0; i < 6; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+    return s;
+  }
+  function getSeedFromUrl() {
+    var m = /[?&]seed=([^&]+)/.exec(window.location.search);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function writeSeedToUrl(seed, replace) {
+    var url = window.location.pathname + "?seed=" + encodeURIComponent(seed) + window.location.hash;
+    if (replace) history.replaceState(null, "", url);
+    else history.pushState(null, "", url);
+  }
+
+  // ---- Deterministic 24-of-31 selection + placement from the seed ----
+  function buildLayout(seed) {
+    var rng = makeRng(seed);
+    // Fisher-Yates over all 31 indices using the seeded stream
+    var idx = [];
+    for (var i = 0; i < EVENTS.length; i++) idx.push(i);
+    for (var j = idx.length - 1; j > 0; j--) {
+      var k = Math.floor(rng() * (j + 1));
+      var t = idx[j]; idx[j] = idx[k]; idx[k] = t;
+    }
+    // First 24 of the shuffled order = which events AND their order (random positions)
+    var chosen = idx.slice(0, 24);
+    // Map the 24 chosen into the 25 grid cells, center (12) = FREE
+    var layout = [];
+    var c = 0;
+    for (var p = 0; p < 25; p++) {
+      if (p === 12) layout.push("free");
+      else layout.push(chosen[c++]);
+    }
+    return layout;
+  }
+
+  // ---- Persistence (per seed) ----
+  function storeKey(seed) { return "bingo:" + seed; }
+  function loadMarks(seed) {
+    try {
+      var raw = localStorage.getItem(storeKey(seed));
+      if (raw) {
+        var arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          var set = {};
+          for (var i = 0; i < arr.length; i++) set[arr[i]] = true;
+          return set;
+        }
+      }
+    } catch (e) {}
+    return {};
+  }
+  function saveMarks(seed, marks) {
+    try {
+      var arr = [];
+      for (var p in marks) if (marks[p]) arr.push(Number(p));
+      localStorage.setItem(storeKey(seed), JSON.stringify(arr));
+    } catch (e) {}
+  }
+
+  // ---- Win detection ----
+  var LINES = (function () {
+    var lines = [], r, c;
+    for (r = 0; r < 5; r++) lines.push([r*5, r*5+1, r*5+2, r*5+3, r*5+4]);
+    for (c = 0; c < 5; c++) lines.push([c, c+5, c+10, c+15, c+20]);
+    lines.push([0, 6, 12, 18, 24]);
+    lines.push([4, 8, 12, 16, 20]);
+    return lines;
+  })();
+
+  // ---- State ----
+  var seed, layout, marks;
+
+  function isMarked(pos) { return pos === 12 ? true : !!marks[pos]; }
+
+  function winningSet() {
+    var win = {};
+    for (var i = 0; i < LINES.length; i++) {
+      var ln = LINES[i], all = true;
+      for (var j = 0; j < ln.length; j++) { if (!isMarked(ln[j])) { all = false; break; } }
+      if (all) for (var k = 0; k < ln.length; k++) win[ln[k]] = true;
+    }
+    return win;
+  }
+
+  // ---- Render ----
+  var gridEl = document.getElementById("grid");
+  var bannerEl = document.getElementById("banner");
+  var clearBtn = document.getElementById("clear");
+  var seedlineEl = document.getElementById("seedline");
+
+  function render() {
+    var win = winningSet();
+    var hasWin = false, hasMarks = false, p;
+    for (p in win) { hasWin = true; break; }
+    for (p in marks) { if (marks[p]) { hasMarks = true; break; } }
+
+    gridEl.innerHTML = "";
+    for (var pos = 0; pos < 25; pos++) {
+      var id = layout[pos];
+      var cell = document.createElement("div");
+      cell.className = "cell";
+      cell.setAttribute("data-pos", String(pos));
+
+      if (id === "free") {
+        cell.className += " free";
+        var glyph = document.createElement("div");
+        glyph.className = "glyph";
+        glyph.textContent = "\u2766";
+        var ft = document.createElement("span");
+        ft.className = "txt";
+        ft.textContent = "FREE";
+        cell.appendChild(glyph);
+        cell.appendChild(ft);
+      } else {
+        var text = EVENTS[id];
+        if (text.charAt(0) === "\"") cell.className += " quote";
+        if (isMarked(pos)) cell.className += " marked";
+        if (win[pos]) cell.className += " win";
+        var sp = document.createElement("span");
+        sp.className = "txt";
+        sp.textContent = text;
+        cell.appendChild(sp);
+        if (isMarked(pos)) {
+          var stamp = document.createElement("div");
+          stamp.className = "stamp";
+          stamp.textContent = "\u2766";
+          cell.appendChild(stamp);
+        }
+      }
+      gridEl.appendChild(cell);
+    }
+
+    if (hasWin) bannerEl.classList.remove("hidden");
+    else bannerEl.classList.add("hidden");
+
+    if (hasMarks) clearBtn.classList.remove("hidden");
+    else clearBtn.classList.add("hidden");
+
+    seedlineEl.textContent = "Card seed · " + seed;
+  }
+
+  // ---- Interactions ----
+  gridEl.addEventListener("click", function (e) {
+    var cell = e.target.closest ? e.target.closest(".cell") : null;
+    if (!cell) return;
+    var pos = Number(cell.getAttribute("data-pos"));
+    if (pos === 12) return; // FREE never toggles
+    if (marks[pos]) delete marks[pos]; else marks[pos] = true;
+    saveMarks(seed, marks);
+    render();
+  });
+
+  document.getElementById("newCard").addEventListener("click", function () {
+    seed = randomSeed();
+    writeSeedToUrl(seed, false);
+    layout = buildLayout(seed);
+    marks = loadMarks(seed); // blank for a brand-new seed
+    render();
+  });
+
+  clearBtn.addEventListener("click", function () {
+    marks = {};
+    saveMarks(seed, marks);
+    render();
+  });
+
+  window.addEventListener("popstate", function () {
+    init();
+  });
+
+  // ---- Init ----
+  function init() {
+    var s = getSeedFromUrl();
+    if (!s) {
+      s = randomSeed();
+      writeSeedToUrl(s, true); // replaceState so refresh keeps the same card
+    }
+    seed = s;
+    layout = buildLayout(seed);
+    marks = loadMarks(seed);
+    render();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
